@@ -72,8 +72,8 @@ def tag_repo(tag):
     push_url = re.sub(r'([a-z]+://)[^@]*(@.*)', rf'\g<1>{username}:{password}\g<2>', repository_url)
 
     git("remote", "set-url", "--push", "origin", push_url)
-    git("tag", tag)
-    git("push", "origin", tag)
+    git("tag", "-a", tag, "-m", tag)
+    git("push", "origin", --tags)
 
 
 def main():

@@ -6,12 +6,15 @@ import semver
 import subprocess
 import gitlab
 
+
 def git(*args):
     return subprocess.check_output(["git"] + list(args))
+
 
 def verify_env_var_presence(name):
     if name not in os.environ:
         raise Exception(f"Expected the following environment variable to be set: {name}")
+
 
 def extract_gitlab_url_from_project_url():
     project_url = os.environ['CI_PROJECT_URL']
@@ -19,14 +22,16 @@ def extract_gitlab_url_from_project_url():
 
     return project_url.split(f"/{project_path}", 1)[0]
 
+
 def extract_merge_request_id_from_commit():
     message = git("log", "-1", "--pretty=%B")
-    matches = re.search(r'(\S*\/\S*!)(\d+)', message.decode("utf-8"), re.M|re.I)
-    
-    if matches == None:
-        raise Exception(f"Unable to extract merge request from commit message: {message}")
+    matches = re.search(r'(\S*\/\S*!)(\d+)', message.decode("utf-8"), re.M | re.I)
+
+    if matches is None:
+        return ""
 
     return matches.group(2)
+
 
 def retrieve_labels_from_merge_request(merge_request_id):
     project_id = os.environ['CI_PROJECT_ID']
@@ -40,15 +45,16 @@ def retrieve_labels_from_merge_request(merge_request_id):
 
     return merge_request.labels
 
-def bump(latest):
 
+def bump(latest):
     minor_bump_label = os.environ.get("MINOR_BUMP_LABEL") or "bump-minor"
     major_bump_label = os.environ.get("MAJOR_BUMP_LABEL") or "bump-major"
 
     merge_request_id = extract_merge_request_id_from_commit()
-    labels = retrieve_labels_from_merge_request(merge_request_id)
 
-
+    labels = []
+    if merge_request_id:
+        labels = retrieve_labels_from_merge_request(merge_request_id)
 
     if minor_bump_label in labels:
         return semver.bump_minor(latest)
@@ -56,6 +62,7 @@ def bump(latest):
         return semver.bump_major(latest)
     else:
         return semver.bump_patch(latest)
+
 
 def tag_repo(tag):
     repository_url = os.environ["CI_REPOSITORY_URL"]
@@ -66,10 +73,12 @@ def tag_repo(tag):
 
     git("remote", "set-url", "--push", "origin", push_url)
     git("tag", tag)
-    git("push", "origin", tag)        
+    git("push", "origin", tag)
+
 
 def main():
-    env_list = ["CI_REPOSITORY_URL", "CI_PROJECT_ID", "CI_PROJECT_URL", "CI_PROJECT_PATH", "NPA_USERNAME", "NPA_PASSWORD"]
+    env_list = ["CI_REPOSITORY_URL", "CI_PROJECT_ID", "CI_PROJECT_URL", "CI_PROJECT_PATH", "NPA_USERNAME",
+                "NPA_PASSWORD"]
     [verify_env_var_presence(e) for e in env_list]
 
     try:

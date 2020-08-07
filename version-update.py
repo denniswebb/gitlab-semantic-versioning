@@ -73,7 +73,7 @@ def tag_repo(tag):
 
     git("remote", "set-url", "--push", "origin", push_url)
     git("tag", "-a", tag, "-m", tag)
-    git("push", "origin", --tags)
+    git("push", "origin", tag)
 
 
 def main():

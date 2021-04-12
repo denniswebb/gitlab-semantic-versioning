@@ -15,4 +15,4 @@ RUN pip install -r requirements.txt
 
 COPY /version-update.py .
 
-CMD ["python", "/version-update.py"]
+CMD ["python", "/version-update/version-update.py"]

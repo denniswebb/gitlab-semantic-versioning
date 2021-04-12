@@ -50,6 +50,12 @@ def bump(latest):
     minor_bump_label = os.environ.get("MINOR_BUMP_LABEL") or "bump-minor"
     major_bump_label = os.environ.get("MAJOR_BUMP_LABEL") or "bump-major"
 
+    semver_prefix = ""
+
+    if latest[0] == "v":
+        semver_prefix = "v"
+        latest = latest[1:]
+
     merge_request_id = extract_merge_request_id_from_commit()
 
     labels = []
@@ -57,11 +63,11 @@ def bump(latest):
         labels = retrieve_labels_from_merge_request(merge_request_id)
 
     if minor_bump_label in labels:
-        return semver.bump_minor(latest)
+        return f'{semver_prefix}{semver.bump_minor(latest)}'
     elif major_bump_label in labels:
-        return semver.bump_major(latest)
+        return f'{semver_prefix}{semver.bump_major(latest)}'
     else:
-        return semver.bump_patch(latest)
+        return f'{semver_prefix}{semver.bump_patch(latest)}'
 
 
 def tag_repo(tag):

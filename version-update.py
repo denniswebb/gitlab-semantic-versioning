@@ -98,6 +98,8 @@ def main():
             print(latest)
             return 0
 
+        # if latest is a sub-tag (e.g. apm/v0.0.25), extract version (v0.0.25)
+        latest = latest[latest.find('/') + 1:]
         version = bump(latest)
 
     tag_repo(version)
